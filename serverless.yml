@@ -1,0 +1,18 @@
+service:
+  name: aws-nodejs-typescript
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+
+functions:
+  hello:
+    handler: handler.graphqlHandler
+    events:
+      - http:
+          method: post
+          path: get
