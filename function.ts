@@ -1,5 +1,7 @@
 import * as redis from 'redis'
-import { promisify } from 'util';
+import {
+    promisify
+} from 'util';
 
 const redisOptions = {
     host: 'localhost',
@@ -9,13 +11,22 @@ const redisOptions = {
 
 let client;
 
-export const getComments = (rfqid, f) => {
+export const getComments = async (rfqid, f) => {
+    var comments = [];
     if (!f) {
         client = redis.createClient(redisOptions.port, redisOptions.host);
         console.log("creating client");
     }
     f = 1;
-    const getAsync = promisify(client.get).bind(client);
+    const getAsync = promisify(client.LINDEX).bind(client);
+
+    function fun(rfqid, i) {
+        return getAsync(rfqid, i).then(function (res) {
+            if (res === null) return null;
+            console.log("-In the function log :" + res + "\n");
+            return res;
+        });
+    }
     client.on('connect', () => {
         console.log('redis has started.');
     });
@@ -25,10 +36,23 @@ export const getComments = (rfqid, f) => {
     client.on('end', () => {
         console.log('redis closed.');
     });
-    return getAsync(rfqid).then(function (res) {
-        if (res === null) return "we were not able to FIND the specified rfqid";
-        return res;
-    });
+    let i = 0;
+    let res;
+    do {
+        res = await fun(rfqid, i).then((reply) => {
+            return reply;
+        });
+        console.log("+In the while log :" + res + "\n");
+        if (res !== null) {
+            comments[i] = res;
+        } else {
+            break;
+        }
+        i++;
+    } while (res !== null);
+    console.log(JSON.stringify(comments));
+    return JSON.stringify(comments);
+
 }
 
 export const setComments = (rfqid, content, f) => {
@@ -38,7 +62,8 @@ export const setComments = (rfqid, content, f) => {
         console.log("creating client");
     }
     f = 1;
-    const setAsync = promisify(client.set).bind(client);
+    const setAsync = promisify(client.rpush).bind(client);
+
     client.on('connect', () => {
         console.log('redis has started.');
     });

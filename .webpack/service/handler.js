@@ -101,6 +101,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var redis__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(redis__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! util */ "util");
 /* harmony import */ var util__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(util__WEBPACK_IMPORTED_MODULE_1__);
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 
 const redisOptions = {
@@ -108,13 +116,22 @@ const redisOptions = {
     port: '6379',
 };
 let client;
-const getComments = (rfqid, f) => {
+const getComments = (rfqid, f) => __awaiter(undefined, void 0, void 0, function* () {
+    var comments = [];
     if (!f) {
         client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
         console.log("creating client");
     }
     f = 1;
-    const getAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.get).bind(client);
+    const getAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.LINDEX).bind(client);
+    function fun(rfqid, i) {
+        return getAsync(rfqid, i).then(function (res) {
+            if (res === null)
+                return null;
+            console.log("-In the function log :" + res + "\n");
+            return res;
+        });
+    }
     client.on('connect', () => {
         console.log('redis has started.');
     });
@@ -124,19 +141,31 @@ const getComments = (rfqid, f) => {
     client.on('end', () => {
         console.log('redis closed.');
     });
-    return getAsync(rfqid).then(function (res) {
-        if (res === null)
-            return "we were not able to FIND the specified rfqid";
-        return res;
-    });
-};
+    let i = 0;
+    let res;
+    do {
+        res = yield fun(rfqid, i).then((reply) => {
+            return reply;
+        });
+        console.log("+In the while log :" + res + "\n");
+        if (res !== null) {
+            comments[i] = res;
+        }
+        else {
+            break;
+        }
+        i++;
+    } while (res !== null);
+    console.log(JSON.stringify(comments));
+    return JSON.stringify(comments);
+});
 const setComments = (rfqid, content, f) => {
     if (!f) {
         client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
         console.log("creating client");
     }
     f = 1;
-    const setAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.set).bind(client);
+    const setAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.rpush).bind(client);
     client.on('connect', () => {
         console.log('redis has started.');
     });

@@ -31,9 +31,6 @@ process.on('exit', (code) => {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  // context:(event, context)=>{
-  //   context.callbackWaitsForEmptyEventLoop = false;
-  // }
 });
 
 exports.graphqlHandler = server.createHandler();
