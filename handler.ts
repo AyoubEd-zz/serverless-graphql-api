@@ -1,5 +1,5 @@
 import { ApolloServer, gql } from 'apollo-server-lambda';
-import { getComments, setComments } from './function'
+import { ICommentService, CommentService } from './comment.service'
 
 const typeDefs = gql`
   type comment{
@@ -8,10 +8,11 @@ const typeDefs = gql`
     createdAt : String
   }
   type Query {
-    get(rfqid: String): [comment]
+    get(itemId: String): [comment]
   }
+
   type Mutation {
-    set(rfqid: String, content:String): String
+    set(itemId: String): String
   }
 `;
 let f;
@@ -19,19 +20,16 @@ let f;
 const resolvers = {
   Query: {
     get: (root, args) => {
-      return getComments(args.rfqid, f);
+      const service = new CommentService();
+
+      return service.getComments(args.itemId);
     },
   },
   Mutation: {
     set: (roots, args) => {
-      return setComments(args.rfqid, args.content, f);
     }
   }
 };
-
-process.on('exit', (code) => {
-  console.log(`About to exit with code: ${code}`);
-});
 
 const server = new ApolloServer({
   typeDefs,
