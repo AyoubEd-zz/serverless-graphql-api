@@ -2,8 +2,13 @@ import { ApolloServer, gql } from 'apollo-server-lambda';
 import { getComments, setComments } from './function'
 
 const typeDefs = gql`
+  type comment{
+    auhtor : String
+    content : String
+    createdAt : String
+  }
   type Query {
-    get(rfqid: String): String
+    get(rfqid: String): [comment]
   }
   type Mutation {
     set(rfqid: String, content:String): String

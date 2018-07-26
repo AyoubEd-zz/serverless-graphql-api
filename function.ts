@@ -39,9 +39,7 @@ export const getComments = async (rfqid, f) => {
     let i = 0;
     let res;
     do {
-        res = await fun(rfqid, i).then((reply) => {
-            return reply;
-        });
+        res = await fun(rfqid, i);
         console.log("+In the while log :" + res + "\n");
         if (res !== null) {
             comments[i] = res;
@@ -51,7 +49,7 @@ export const getComments = async (rfqid, f) => {
         i++;
     } while (res !== null);
     console.log(JSON.stringify(comments));
-    return JSON.stringify(comments);
+    return comments;
 
 }
 

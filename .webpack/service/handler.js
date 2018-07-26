@@ -144,9 +144,7 @@ const getComments = (rfqid, f) => __awaiter(undefined, void 0, void 0, function*
     let i = 0;
     let res;
     do {
-        res = yield fun(rfqid, i).then((reply) => {
-            return reply;
-        });
+        res = yield fun(rfqid, i);
         console.log("+In the while log :" + res + "\n");
         if (res !== null) {
             comments[i] = res;
@@ -157,7 +155,7 @@ const getComments = (rfqid, f) => __awaiter(undefined, void 0, void 0, function*
         i++;
     } while (res !== null);
     console.log(JSON.stringify(comments));
-    return JSON.stringify(comments);
+    return comments;
 });
 const setComments = (rfqid, content, f) => {
     if (!f) {
@@ -200,8 +198,13 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const typeDefs = apollo_server_lambda__WEBPACK_IMPORTED_MODULE_0__["gql"] `
+  type comment{
+    auhtor : String
+    content : String
+    createdAt : String
+  }
   type Query {
-    get(rfqid: String): String
+    get(rfqid: String): [comment]
   }
   type Mutation {
     set(rfqid: String, content:String): String
