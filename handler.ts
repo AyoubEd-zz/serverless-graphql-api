@@ -1,37 +1,44 @@
 import { ApolloServer, gql } from 'apollo-server-lambda';
-import { getComments, setComments } from './function'
+import { CommentService } from './comment.service';
 
 const typeDefs = gql`
-  type comment{
-    auhtor : String
+  type Comment{
+    msgId: Int
+    author : String
     content : String
     createdAt : String
   }
   type Query {
-    get(rfqid: String): [comment]
+    get(itemId: String): [String]
   }
   type Mutation {
-    set(rfqid: String, content:String): String
+    add(itemId: String, msgId:String, author:String, content:String, createdAt:String): String
+  }
+  type Mutation2 {
+    edit(itemId: String, content:String, createdAt:String): String
   }
 `;
-let f;
 
 const resolvers = {
   Query: {
     get: (root, args) => {
-      return getComments(args.rfqid, f);
+      const service = new CommentService();
+      return service.getComments(args.itemId);
     },
   },
   Mutation: {
-    set: (roots, args) => {
-      return setComments(args.rfqid, args.content, f);
+    add: (roots, args) => {
+      const service = new CommentService();
+      return service.addComments(args.itemId, args.msgId, args.author, args.content, args.createdAt);
+    }
+  },
+  Mutation2: {
+    edit: (roots, args) => {
+      const service = new CommentService();
+      return service.editComments(args.itemId, args.author, args.content, args.createdAt);
     }
   }
 };
-
-process.on('exit', (code) => {
-  console.log(`About to exit with code: ${code}`);
-});
 
 const server = new ApolloServer({
   typeDefs,
