@@ -110,11 +110,14 @@ class CommentService {
     getComments(itemId) {
         return this.commentStore.get(itemId);
     }
-    addComments(itemId, msgId, author, content, createdAt) {
-        return this.commentStore.add(itemId, author, content, createdAt);
+    addComments(itemId, author, content) {
+        return this.commentStore.add(itemId, author, content);
     }
-    editComments(itemId, content, createdAt) {
-        return this.commentStore.edit(itemId, content, createdAt);
+    editComments(itemId, msgId, author, content, createdAt) {
+        return this.commentStore.edit(itemId, msgId, author, content, createdAt);
+    }
+    deleteComments(itemId, msgId) {
+        return this.commentStore.delete(itemId, msgId);
     }
 }
 
@@ -164,34 +167,60 @@ class CommentStorage {
             return res.map(row => JSON.parse(row));
         });
     }
-    add(key, author, content, createdAt) {
+    add(key, author, content) {
         return __awaiter(this, void 0, void 0, function* () {
             client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
-            const getLnAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.llen).bind(client);
-            console.log(getLnAsync(key));
-            let msgId = yield getLnAsync(key);
-            console.log(msgId + 1);
+            const lindexAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.lindex).bind(client);
+            let lastElement = yield lindexAsync(key, -1);
+            lastElement = JSON.parse(lastElement);
+            console.log(lastElement.msgId);
             let comment = {
-                msgId: msgId + 1,
+                msgId: lastElement.msgId + 1,
                 author: author,
                 content: content,
-                createdAt: createdAt
+                createdAt: Date.now()
             };
             client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
-            const setAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.rpush).bind(client);
+            const addAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.rpush).bind(client);
             let value = JSON.stringify(comment);
-            return setAsync(key, value).then((status) => {
+            return addAsync(key, value).then((status) => {
                 return status;
             });
         });
     }
-    edit(key, msgId, content, createdAt) {
+    edit(key, msgId, author, content, createdAt) {
         return __awaiter(this, void 0, void 0, function* () {
-            const setAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.rpush).bind(client);
-            const getAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.lrange).bind(client);
-            let comments = yield getAsync(key);
-            return;
+            client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
+            const setAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.lset).bind(client);
+            let comments = this.get(key);
+            let i = 0;
+            comments.forEach(element => {
+                if (element.msgId === msgId) {
+                    if (author)
+                        element.author = author;
+                    if (content)
+                        element.content = content;
+                    if (createdAt)
+                        element.createdAt = createdAt;
+                    setAsync(key, i, element);
+                }
+                i++;
+            });
+            for (let i = 0; i < comments.length; i++) {
+            }
+            return comments;
         });
+    }
+    delete(key, msgId) {
+        client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
+        const delAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.lrem).bind(client);
+        let comments = this.get(key);
+        comments.forEach(element => {
+            if (element.msgId === msgId) {
+                delAsync(key, 0, element);
+            }
+        });
+        return "OK";
     }
 }
 
@@ -223,10 +252,9 @@ const typeDefs = apollo_server_lambda__WEBPACK_IMPORTED_MODULE_0__["gql"] `
     get(itemId: String): [Comment]
   }
   type Mutation {
-    add(itemId: String, author:String, content:String, createdAt:String): String
-  }
-  type Mutation2 {
-    edit(itemId: String, content:String, createdAt:String): String
+    add(itemId: String, author:String, content:String): String
+    edit(itemId: String, msgId:Int, auhtor:String, content:String, createdAt:String): String
+    delete(itemId: String, msgId:Int) : String
   }
 `;
 const resolvers = {
@@ -239,13 +267,15 @@ const resolvers = {
     Mutation: {
         add: (roots, args) => {
             const service = new _comment_service__WEBPACK_IMPORTED_MODULE_1__["CommentService"]();
-            return service.addComments(args.itemId, args.msgId, args.author, args.content, args.createdAt);
-        }
-    },
-    Mutation2: {
+            return service.addComments(args.itemId, args.author, args.content);
+        },
         edit: (roots, args) => {
             const service = new _comment_service__WEBPACK_IMPORTED_MODULE_1__["CommentService"]();
-            return service.editComments(args.itemId, args.author, args.content, args.createdAt);
+            return service.editComments(args.itemId, args.msgId, args.author, args.content, args.createdAt);
+        },
+        delete: (roots, args) => {
+            const service = new _comment_service__WEBPACK_IMPORTED_MODULE_1__["CommentService"]();
+            return service.deleteComments(args.itemId, args.msgId);
         }
     }
 };
