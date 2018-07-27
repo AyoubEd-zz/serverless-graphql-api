@@ -9,10 +9,10 @@ const typeDefs = gql`
     createdAt : String
   }
   type Query {
-    get(itemId: String): [String]
+    get(itemId: String): [Comment]
   }
   type Mutation {
-    add(itemId: String, msgId:String, author:String, content:String, createdAt:String): String
+    add(itemId: String, msgId:Int, author:String, content:String, createdAt:String): String
   }
   type Mutation2 {
     edit(itemId: String, content:String, createdAt:String): String

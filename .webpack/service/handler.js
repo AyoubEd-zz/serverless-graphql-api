@@ -160,10 +160,8 @@ class CommentStorage {
         client.on('end', () => {
             console.log('redis closed.');
         });
-        console.log(getAsync(key, 0, -1));
         return getAsync(key, 0, -1).then((res) => {
-            console.log(res);
-            return res;
+            return res.map(row => JSON.parse(row));
         });
     }
     add(key, msgId, author, content, createdAt) {
@@ -175,7 +173,6 @@ class CommentStorage {
         };
         client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
         const setAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.rpush).bind(client);
-        console.log(comment);
         let value = JSON.stringify(comment);
         return setAsync(key, value).then((status) => {
             return status;
@@ -216,10 +213,10 @@ const typeDefs = apollo_server_lambda__WEBPACK_IMPORTED_MODULE_0__["gql"] `
     createdAt : String
   }
   type Query {
-    get(itemId: String): [String]
+    get(itemId: String): [Comment]
   }
   type Mutation {
-    add(itemId: String, msgId:String, author:String, content:String, createdAt:String): String
+    add(itemId: String, msgId:Int, author:String, content:String, createdAt:String): String
   }
   type Mutation2 {
     edit(itemId: String, content:String, createdAt:String): String
