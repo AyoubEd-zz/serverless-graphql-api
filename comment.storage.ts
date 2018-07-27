@@ -13,7 +13,7 @@ let client;
 export interface ICommentStorage {
 
   get(key): [Comment];
-  add(key, msgId, author, content, createdAt): String
+  add(key, author, content, createdAt): String
 }
 
 export class CommentStorage {
@@ -34,10 +34,15 @@ export class CommentStorage {
     });
   }
 
-  add(key, msgId, author, content, createdAt): String {
+  async add(key, author, content, createdAt): Promise<String> {
 
+    client = redis.createClient(redisOptions.port, redisOptions.host);
+    const getLnAsync = promisify(client.llen).bind(client);
+    console.log(getLnAsync(key));
+    let msgId = await getLnAsync(key);
+    console.log(msgId + 1);
     let comment: Comment = {
-      msgId: msgId,
+      msgId: msgId + 1,
       author: author,
       content: content,
       createdAt: createdAt
@@ -50,7 +55,7 @@ export class CommentStorage {
       return status;
     });
   }
-  
+
   async edit(key, msgId, content, createdAt): Promise<String> {
 
     const setAsync = promisify(client.rpush).bind(client);

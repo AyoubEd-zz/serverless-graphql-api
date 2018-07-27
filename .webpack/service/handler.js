@@ -111,7 +111,7 @@ class CommentService {
         return this.commentStore.get(itemId);
     }
     addComments(itemId, msgId, author, content, createdAt) {
-        return this.commentStore.add(itemId, msgId, author, content, createdAt);
+        return this.commentStore.add(itemId, author, content, createdAt);
     }
     editComments(itemId, content, createdAt) {
         return this.commentStore.edit(itemId, content, createdAt);
@@ -164,18 +164,25 @@ class CommentStorage {
             return res.map(row => JSON.parse(row));
         });
     }
-    add(key, msgId, author, content, createdAt) {
-        let comment = {
-            msgId: msgId,
-            author: author,
-            content: content,
-            createdAt: createdAt
-        };
-        client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
-        const setAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.rpush).bind(client);
-        let value = JSON.stringify(comment);
-        return setAsync(key, value).then((status) => {
-            return status;
+    add(key, author, content, createdAt) {
+        return __awaiter(this, void 0, void 0, function* () {
+            client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
+            const getLnAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.llen).bind(client);
+            console.log(getLnAsync(key));
+            let msgId = yield getLnAsync(key);
+            console.log(msgId + 1);
+            let comment = {
+                msgId: msgId + 1,
+                author: author,
+                content: content,
+                createdAt: createdAt
+            };
+            client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
+            const setAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.rpush).bind(client);
+            let value = JSON.stringify(comment);
+            return setAsync(key, value).then((status) => {
+                return status;
+            });
         });
     }
     edit(key, msgId, content, createdAt) {
@@ -216,7 +223,7 @@ const typeDefs = apollo_server_lambda__WEBPACK_IMPORTED_MODULE_0__["gql"] `
     get(itemId: String): [Comment]
   }
   type Mutation {
-    add(itemId: String, msgId:Int, author:String, content:String, createdAt:String): String
+    add(itemId: String, author:String, content:String, createdAt:String): String
   }
   type Mutation2 {
     edit(itemId: String, content:String, createdAt:String): String
