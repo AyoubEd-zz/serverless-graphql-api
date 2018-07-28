@@ -14,7 +14,7 @@ export interface ICommentStorage {
 
   get(key): [Comment];
   add(key: string, author: string, content: string): string;
-  edit(key: string, msgId: number, author: string, content: string, createdAt: string): string;
+  edit(key: string, msgId: number, author: string, content: string): string;
   delete(key: string, msgId: number): string;
 }
 
@@ -24,7 +24,7 @@ export class CommentStorage {
 
     client = redis.createClient(redisOptions.port, redisOptions.host);
     const getAsync = promisify(client.lrange).bind(client);
-    
+
     client.on('ready', () => {
       console.log('redis is ready.');
     });
@@ -41,11 +41,15 @@ export class CommentStorage {
     client = redis.createClient(redisOptions.port, redisOptions.host);
     const lindexAsync = promisify(client.lindex).bind(client);
     let lastElement = await lindexAsync(key, -1);
-    lastElement = JSON.parse(lastElement);
-    console.log(lastElement.msgId);
+    let new_msgId = 0;
+    if (lastElement != null) {
+      lastElement = JSON.parse(lastElement);
+      new_msgId = lastElement.msgId + 1;
+      console.log(lastElement.msgId);
+    }
 
     let comment: Comment = {
-      msgId: lastElement.msgId+1,
+      msgId: new_msgId,
       author: author,
       content: content,
       createdAt: Date.now()
@@ -59,37 +63,38 @@ export class CommentStorage {
     });
   }
 
-  async edit(key, msgId, author, content, createdAt): Promise<[Comment]> {
+  async edit(key, msgId, author, content): Promise<string> {
 
     client = redis.createClient(redisOptions.port, redisOptions.host);
     const setAsync = promisify(client.lset).bind(client);
-    let comments = this.get(key);
-    let i = 0;
-    comments.forEach(element => {
-      if (element.msgId === msgId) {
-        if (author) element.author = author;
-        if (content) element.content = content;
-        if (createdAt) element.createdAt = createdAt;
-        setAsync(key, i, element);
-      }
-      i++;
-    });
-    for(let i = 0;i<comments.length;i++){
+    let comments = await this.get(key);
 
+    for (let i = 0; i < comments.length; i++) {
+      if (comments[i].msgId === msgId) {
+        console.log(comments[i]);
+        if(author) comments[i].author = author;
+        if(content) comments[i].content = content;
+        console.log(comments[i]);
+        setAsync(key, i, JSON.stringify(comments[i]));
+      }
     }
-    return comments;
+
+    return "OK";
   }
 
-  delete(key, msgId): string {
+  async delete(key, msgId): Promise<string> {
 
     client = redis.createClient(redisOptions.port, redisOptions.host);
     const delAsync = promisify(client.lrem).bind(client);
-    let comments = this.get(key);
-    comments.forEach(element => {
-      if (element.msgId === msgId) {
-        delAsync(key, 0 , element);
+    let comments = await this.get(key);
+
+    for (let i = 0; i < comments.length; i++) {
+      if (comments[i].msgId === msgId) {
+        console.log(comments[i]);
+        delAsync(key, 0, JSON.stringify(comments[i]));
       }
-    });
+    }
+
     return "OK";
   }
 }

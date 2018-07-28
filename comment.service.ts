@@ -5,7 +5,7 @@ export interface ICommentService {
 
   getComments(itemId: string): [Comment];
   addComments(itemId: string, author: string, content: string): string;
-  editComments(itemId: string, msgId:number, author:string, content:string, createdAt:string) : string;
+  editComments(itemId: string, msgId:number, author:string, content:string) : string;
   deleteComments(itemId: string, msgId:number) : string;
 }
 
@@ -32,9 +32,9 @@ export class CommentService implements ICommentService {
     return this.commentStore.add(itemId, author, content);
   }
   
-  editComments(itemId, msgId, author, content, createdAt): string {
+  editComments(itemId, msgId, author, content): string {
 
-    return this.commentStore.edit(itemId, msgId, author, content, createdAt);
+    return this.commentStore.edit(itemId, msgId, author, content);
   }
 
   deleteComments(itemId, msgId) : string{
