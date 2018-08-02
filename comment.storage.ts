@@ -8,18 +8,19 @@ const redisOptions = {
 }
 let client;
 
-// CRUD functions
 
 export interface ICommentStorage {
 
   get(key): [Comment];
-  add(key: string, author: string, content: string): [Comment];
+  add(key: string, userId: string, content: string): [Comment];
   edit(key: string, msgId: number, content: string): [Comment];
   delete(key: string, msgId: number): [Comment];
 }
 
 export class CommentStorage {
-  // Get Comments
+  
+  // CRUD functions
+  // Get Comments : Uses the key wich is itemId to fetch all comments related to it
   get(key): [Comment] {
 
     client = redis.createClient(redisOptions.port, redisOptions.host);
@@ -35,8 +36,8 @@ export class CommentStorage {
       return res.map(row => JSON.parse(row));
     });
   }
-  // Add Comments
-  async add(key, author, content): Promise<[Comment]> {
+  // Add Comments : appends a comment to the list for a specific item
+  async add(key, userId, content): Promise<[Comment]> {
 
     client = redis.createClient(redisOptions.port, redisOptions.host);
     const lindexAsync = promisify(client.lindex).bind(client);
@@ -50,7 +51,7 @@ export class CommentStorage {
 
     let comment: Comment = {
       msgId: new_msgId,
-      author: author,
+      userId: userId,
       content: content,
       createdAt: Date.now()
     }
@@ -62,7 +63,7 @@ export class CommentStorage {
       return this.get(key);
     });
   }
-  // Edit Comments
+  // Edit Comments  : loop through comments and edit the one with the specific msgId
   async edit(key, msgId, content): Promise<[Comment]> {
 
     client = redis.createClient(redisOptions.port, redisOptions.host);
@@ -80,7 +81,7 @@ export class CommentStorage {
 
     return this.get(key);
   }
-  //Delete Comments
+  //Delete Comments : loop through the comments and delete the comment with specific msgId
   async delete(key, msgId): Promise<[Comment]> {
 
     client = redis.createClient(redisOptions.port, redisOptions.host);

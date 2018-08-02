@@ -1,6 +1,6 @@
 export interface Comment {
   msgId: number,
-  author: string,
+  userId: string,
   content: string,
   createdAt: number
 }

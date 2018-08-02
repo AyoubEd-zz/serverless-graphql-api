@@ -110,8 +110,8 @@ class CommentService {
     getComments(itemId) {
         return this.commentStore.get(itemId);
     }
-    addComments(itemId, author, content) {
-        return this.commentStore.add(itemId, author, content);
+    addComments(itemId, userId, content) {
+        return this.commentStore.add(itemId, userId, content);
     }
     editComments(itemId, msgId, content) {
         return this.commentStore.edit(itemId, msgId, content);
@@ -154,7 +154,8 @@ const redisOptions = {
 };
 let client;
 class CommentStorage {
-    // Get Comments
+    // CRUD functions
+    // Get Comments : Uses the key wich is itemId to fetch all comments related to it
     get(key) {
         client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
         const getAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.lrange).bind(client);
@@ -168,8 +169,8 @@ class CommentStorage {
             return res.map(row => JSON.parse(row));
         });
     }
-    // Add Comments
-    add(key, author, content) {
+    // Add Comments : appends a comment to the list for a specific item
+    add(key, userId, content) {
         return __awaiter(this, void 0, void 0, function* () {
             client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
             const lindexAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.lindex).bind(client);
@@ -182,7 +183,7 @@ class CommentStorage {
             }
             let comment = {
                 msgId: new_msgId,
-                author: author,
+                userId: userId,
                 content: content,
                 createdAt: Date.now()
             };
@@ -194,7 +195,7 @@ class CommentStorage {
             });
         });
     }
-    // Edit Comments
+    // Edit Comments  : loop through comments and edit the one with the specific msgId
     edit(key, msgId, content) {
         return __awaiter(this, void 0, void 0, function* () {
             client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
@@ -212,7 +213,7 @@ class CommentStorage {
             return this.get(key);
         });
     }
-    //Delete Comments
+    //Delete Comments : loop through the comments and delete the comment with specific msgId
     delete(key, msgId) {
         return __awaiter(this, void 0, void 0, function* () {
             client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
@@ -249,7 +250,7 @@ __webpack_require__.r(__webpack_exports__);
 const typeDefs = apollo_server_lambda__WEBPACK_IMPORTED_MODULE_0__["gql"] `
   type Comment{
     msgId: Int
-    author : String
+    userId : String
     content : String
     createdAt : String
   }
@@ -257,27 +258,31 @@ const typeDefs = apollo_server_lambda__WEBPACK_IMPORTED_MODULE_0__["gql"] `
     get(itemId: String): [Comment]
   }
   type Mutation {
-    add(itemId: String, author:String, content:String): [Comment]
+    add(itemId: String, userId:String, content:String): [Comment]
     edit(itemId: String, msgId:Int, content:String): [Comment]
     delete(itemId: String, msgId:Int) : [Comment]
   }
 `;
 const resolvers = {
     Query: {
+        // Get Comments
         get: (root, args) => {
             const service = new _comment_service__WEBPACK_IMPORTED_MODULE_1__["CommentService"]();
             return service.getComments(args.itemId);
         },
     },
     Mutation: {
+        // Add Comments
         add: (roots, args) => {
             const service = new _comment_service__WEBPACK_IMPORTED_MODULE_1__["CommentService"]();
-            return service.addComments(args.itemId, args.author, args.content);
+            return service.addComments(args.itemId, args.userId, args.content);
         },
+        //Edit Comment
         edit: (roots, args) => {
             const service = new _comment_service__WEBPACK_IMPORTED_MODULE_1__["CommentService"]();
             return service.editComments(args.itemId, args.msgId, args.content);
         },
+        // Delete Comment
         delete: (roots, args) => {
             const service = new _comment_service__WEBPACK_IMPORTED_MODULE_1__["CommentService"]();
             return service.deleteComments(args.itemId, args.msgId);
