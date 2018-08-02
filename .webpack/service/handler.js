@@ -86,17 +86,54 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./function.ts":
-/*!*********************!*\
-  !*** ./function.ts ***!
-  \*********************/
-/*! exports provided: getComments, setComments */
+/***/ "./comment.service.ts":
+/*!****************************!*\
+  !*** ./comment.service.ts ***!
+  \****************************/
+/*! exports provided: CommentService */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getComments", function() { return getComments; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setComments", function() { return setComments; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CommentService", function() { return CommentService; });
+/* harmony import */ var _comment_storage__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./comment.storage */ "./comment.storage.ts");
+
+class CommentService {
+    constructor(store) {
+        if (store) {
+            this.commentStore = store;
+        }
+        else {
+            this.commentStore = new _comment_storage__WEBPACK_IMPORTED_MODULE_0__["CommentStorage"]();
+        }
+    }
+    getComments(itemId) {
+        return this.commentStore.get(itemId);
+    }
+    addComments(itemId, userId, content) {
+        return this.commentStore.add(itemId, userId, content);
+    }
+    editComments(itemId, msgId, content) {
+        return this.commentStore.edit(itemId, msgId, content);
+    }
+    deleteComments(itemId, msgId) {
+        return this.commentStore.delete(itemId, msgId);
+    }
+}
+
+
+/***/ }),
+
+/***/ "./comment.storage.ts":
+/*!****************************!*\
+  !*** ./comment.storage.ts ***!
+  \****************************/
+/*! exports provided: CommentStorage */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CommentStorage", function() { return CommentStorage; });
 /* harmony import */ var redis__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! redis */ "./node_modules/redis/index.js");
 /* harmony import */ var redis__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(redis__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! util */ "util");
@@ -116,69 +153,82 @@ const redisOptions = {
     port: '6379',
 };
 let client;
-const getComments = (rfqid, f) => __awaiter(undefined, void 0, void 0, function* () {
-    var comments = [];
-    if (!f) {
+class CommentStorage {
+    // CRUD functions
+    // Get Comments : Uses the key wich is itemId to fetch all comments related to it
+    get(key) {
         client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
-        console.log("creating client");
-    }
-    f = 1;
-    const getAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.LINDEX).bind(client);
-    function fun(rfqid, i) {
-        return getAsync(rfqid, i).then(function (res) {
-            if (res === null)
-                return null;
-            console.log("-In the function log :" + res + "\n");
-            return res;
+        const getAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.lrange).bind(client);
+        client.on('ready', () => {
+            console.log('redis is ready.');
+        });
+        client.on('end', () => {
+            console.log('redis closed.');
+        });
+        return getAsync(key, 0, -1).then((res) => {
+            return res.map(row => JSON.parse(row));
         });
     }
-    client.on('connect', () => {
-        console.log('redis has started.');
-    });
-    client.on('ready', () => {
-        console.log('redis is ready.');
-    });
-    client.on('end', () => {
-        console.log('redis closed.');
-    });
-    let i = 0;
-    let res;
-    do {
-        res = yield fun(rfqid, i);
-        console.log("+In the while log :" + res + "\n");
-        if (res !== null) {
-            comments[i] = res;
-        }
-        else {
-            break;
-        }
-        i++;
-    } while (res !== null);
-    console.log(JSON.stringify(comments));
-    return comments;
-});
-const setComments = (rfqid, content, f) => {
-    if (!f) {
-        client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
-        console.log("creating client");
+    // Add Comments : appends a comment to the list for a specific item
+    add(key, userId, content) {
+        return __awaiter(this, void 0, void 0, function* () {
+            client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
+            const lindexAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.lindex).bind(client);
+            let lastElement = yield lindexAsync(key, -1);
+            let new_msgId = 0;
+            if (lastElement != null) {
+                lastElement = JSON.parse(lastElement);
+                new_msgId = lastElement.msgId + 1;
+                console.log(lastElement.msgId);
+            }
+            let comment = {
+                msgId: new_msgId,
+                userId: userId,
+                content: content,
+                createdAt: Date.now()
+            };
+            client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
+            const addAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.rpush).bind(client);
+            let value = JSON.stringify(comment);
+            return addAsync(key, value).then((status) => {
+                return this.get(key);
+            });
+        });
     }
-    f = 1;
-    const setAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.rpush).bind(client);
-    client.on('connect', () => {
-        console.log('redis has started.');
-    });
-    client.on('ready', () => {
-        console.log('redis is ready.');
-    });
-    client.on('end', () => {
-        console.log('redis closed.');
-    });
-    return setAsync(rfqid, content).then(function (res) {
-        if (res === null)
-            return "we were not able to SAVE the specified rfqid";
-        return res;
-    });
-};
+    // Edit Comments  : loop through comments and edit the one with the specific msgId
+    edit(key, msgId, content) {
+        return __awaiter(this, void 0, void 0, function* () {
+            client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
+            const setAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.lset).bind(client);
+            let comments = yield this.get(key);
+            for (let i = 0; i < comments.length; i++) {
+                if (comments[i].msgId === msgId) {
+                    console.log(comments[i]);
+                    if (content)
+                        comments[i].content = content;
+                    console.log(comments[i]);
+                    setAsync(key, i, JSON.stringify(comments[i]));
+                }
+            }
+            return this.get(key);
+        });
+    }
+    //Delete Comments : loop through the comments and delete the comment with specific msgId
+    delete(key, msgId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
+            const delAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.lrem).bind(client);
+            let comments = yield this.get(key);
+            for (let i = 0; i < comments.length; i++) {
+                if (comments[i].msgId === msgId) {
+                    console.log(comments[i]);
+                    delAsync(key, 0, JSON.stringify(comments[i]));
+                }
+            }
+            return this.get(key);
+        });
+    }
+}
 
 
 /***/ }),
@@ -194,38 +244,51 @@ const setComments = (rfqid, content, f) => {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var apollo_server_lambda__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! apollo-server-lambda */ "./node_modules/apollo-server-lambda/dist/index.js");
 /* harmony import */ var apollo_server_lambda__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(apollo_server_lambda__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _function__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./function */ "./function.ts");
+/* harmony import */ var _comment_service__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./comment.service */ "./comment.service.ts");
 
 
 const typeDefs = apollo_server_lambda__WEBPACK_IMPORTED_MODULE_0__["gql"] `
-  type comment{
-    auhtor : String
+  type Comment{
+    msgId: Int
+    userId : String
     content : String
     createdAt : String
   }
   type Query {
-    get(rfqid: String): [comment]
+    get(itemId: String): [Comment]
   }
   type Mutation {
-    set(rfqid: String, content:String): String
+    add(itemId: String, userId:String, content:String): [Comment]
+    edit(itemId: String, msgId:Int, content:String): [Comment]
+    delete(itemId: String, msgId:Int) : [Comment]
   }
 `;
-let f;
 const resolvers = {
     Query: {
+        // Get Comments
         get: (root, args) => {
-            return Object(_function__WEBPACK_IMPORTED_MODULE_1__["getComments"])(args.rfqid, f);
+            const service = new _comment_service__WEBPACK_IMPORTED_MODULE_1__["CommentService"]();
+            return service.getComments(args.itemId);
         },
     },
     Mutation: {
-        set: (roots, args) => {
-            return Object(_function__WEBPACK_IMPORTED_MODULE_1__["setComments"])(args.rfqid, args.content, f);
+        // Add Comments
+        add: (roots, args) => {
+            const service = new _comment_service__WEBPACK_IMPORTED_MODULE_1__["CommentService"]();
+            return service.addComments(args.itemId, args.userId, args.content);
+        },
+        //Edit Comment
+        edit: (roots, args) => {
+            const service = new _comment_service__WEBPACK_IMPORTED_MODULE_1__["CommentService"]();
+            return service.editComments(args.itemId, args.msgId, args.content);
+        },
+        // Delete Comment
+        delete: (roots, args) => {
+            const service = new _comment_service__WEBPACK_IMPORTED_MODULE_1__["CommentService"]();
+            return service.deleteComments(args.itemId, args.msgId);
         }
     }
 };
-process.on('exit', (code) => {
-    console.log(`About to exit with code: ${code}`);
-});
 const server = new apollo_server_lambda__WEBPACK_IMPORTED_MODULE_0__["ApolloServer"]({
     typeDefs,
     resolvers,
@@ -9701,10 +9764,10 @@ exports.defaultSignature = defaultSignature;
 /*!***********************************************************!*\
   !*** ./node_modules/apollo-engine-reporting/package.json ***!
   \***********************************************************/
-/*! exports provided: _from, _id, _inBundle, _integrity, _location, _phantomChildren, _requested, _requiredBy, _resolved, _shasum, _spec, _where, author, bugs, bundleDependencies, dependencies, deprecated, description, devDependencies, engines, homepage, jest, license, main, name, repository, scripts, types, version, default */
+/*! exports provided: _args, _from, _id, _inBundle, _integrity, _location, _phantomChildren, _requested, _requiredBy, _resolved, _spec, _where, author, bugs, dependencies, description, devDependencies, engines, homepage, jest, license, main, name, repository, scripts, types, version, default */
 /***/ (function(module) {
 
-module.exports = {"_from":"apollo-engine-reporting@0.0.0","_id":"apollo-engine-reporting@0.0.0","_inBundle":false,"_integrity":"sha512-8v+mLqlwTwqCbaI3z7hTFVx6DhXBYMu+7xJP2TllDXwaF3qyTWrmp+YKH7AGFx5y7FRnXndd1wNuhgR3V9BCEQ==","_location":"/apollo-engine-reporting","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"apollo-engine-reporting@0.0.0","name":"apollo-engine-reporting","escapedName":"apollo-engine-reporting","rawSpec":"0.0.0","saveSpec":null,"fetchSpec":"0.0.0"},"_requiredBy":["/apollo-server-core"],"_resolved":"https://registry.npmjs.org/apollo-engine-reporting/-/apollo-engine-reporting-0.0.0.tgz","_shasum":"039bdc5bfb6c22b2e3ae9ad715aa3c391e329a32","_spec":"apollo-engine-reporting@0.0.0","_where":"C:\\Users\\Dev WTC\\Desktop\\typescript-apollo-serverless\\node_modules\\apollo-server-core","author":{"name":"Apollo","email":"community@apollographql.com"},"bugs":{"url":"https://github.com/apollographql/apollo-engine-reporting/issues"},"bundleDependencies":false,"dependencies":{"apollo-engine-reporting-protobuf":"0.0.0-beta.7","apollo-server-env":"2.0.0","async-retry":"^1.2.1","graphql-extensions":"0.1.0","lodash":"^4.17.10"},"deprecated":false,"description":"Send reports about your GraphQL services to Apollo Engine","devDependencies":{"@types/async-retry":"1.2.1","@types/graphql":"0.13.3","@types/jest":"23.3.0","@types/lodash":"4.14.112","graphql":"0.13.2","graphql-tag":"2.9.2","graphql-tools":"3.0.5","jest":"23.4.1","ts-jest":"22.4.6","tslint":"5.11.0"},"engines":{"node":">=6.0"},"homepage":"https://github.com/apollographql/apollo-engine-reporting#readme","jest":{"testEnvironment":"node","setupFiles":["<rootDir>/node_modules/apollo-server-env/dist/index.js"],"transform":{"^.+\\.(ts|js)$":"ts-jest"},"moduleFileExtensions":["ts","js","json"],"testRegex":"src/__tests__/.*$","globals":{"ts-jest":{"skipBabel":true}}},"license":"MIT","main":"./dist/index.js","name":"apollo-engine-reporting","repository":{"type":"git","url":"git+https://github.com/apollographql/apollo-engine-reporting.git"},"scripts":{"circle":"jest --verbose --coverage","clean":"rm -rf dist","compile":"tsc","lint":"prettier -l 'src/**/*.{ts,js}' && tslint -p tsconfig.json 'src/**/*.ts'","lint-fix":"prettier --write 'src/**/*.{ts,js}' && tslint --fix -p tsconfig.json 'src/**/*.ts'","prepublish":"npm run clean && npm run compile","test":"jest --verbose","watch":"tsc -w"},"types":"./dist/index.d.ts","version":"0.0.0"};
+module.exports = {"_args":[["apollo-engine-reporting@0.0.0","C:\\Users\\Dev WTC\\Desktop\\Backend\\phoenix-service-comments"]],"_from":"apollo-engine-reporting@0.0.0","_id":"apollo-engine-reporting@0.0.0","_inBundle":false,"_integrity":"sha512-8v+mLqlwTwqCbaI3z7hTFVx6DhXBYMu+7xJP2TllDXwaF3qyTWrmp+YKH7AGFx5y7FRnXndd1wNuhgR3V9BCEQ==","_location":"/apollo-engine-reporting","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"apollo-engine-reporting@0.0.0","name":"apollo-engine-reporting","escapedName":"apollo-engine-reporting","rawSpec":"0.0.0","saveSpec":null,"fetchSpec":"0.0.0"},"_requiredBy":["/apollo-server-core"],"_resolved":"https://registry.npmjs.org/apollo-engine-reporting/-/apollo-engine-reporting-0.0.0.tgz","_spec":"0.0.0","_where":"C:\\Users\\Dev WTC\\Desktop\\Backend\\phoenix-service-comments","author":{"name":"Apollo","email":"community@apollographql.com"},"bugs":{"url":"https://github.com/apollographql/apollo-engine-reporting/issues"},"dependencies":{"apollo-engine-reporting-protobuf":"0.0.0-beta.7","apollo-server-env":"2.0.0","async-retry":"^1.2.1","graphql-extensions":"0.1.0","lodash":"^4.17.10"},"description":"Send reports about your GraphQL services to Apollo Engine","devDependencies":{"@types/async-retry":"1.2.1","@types/graphql":"0.13.3","@types/jest":"23.3.0","@types/lodash":"4.14.112","graphql":"0.13.2","graphql-tag":"2.9.2","graphql-tools":"3.0.5","jest":"23.4.1","ts-jest":"22.4.6","tslint":"5.11.0"},"engines":{"node":">=6.0"},"homepage":"https://github.com/apollographql/apollo-engine-reporting#readme","jest":{"testEnvironment":"node","setupFiles":["<rootDir>/node_modules/apollo-server-env/dist/index.js"],"transform":{"^.+\\.(ts|js)$":"ts-jest"},"moduleFileExtensions":["ts","js","json"],"testRegex":"src/__tests__/.*$","globals":{"ts-jest":{"skipBabel":true}}},"license":"MIT","main":"./dist/index.js","name":"apollo-engine-reporting","repository":{"type":"git","url":"git+https://github.com/apollographql/apollo-engine-reporting.git"},"scripts":{"circle":"jest --verbose --coverage","clean":"rm -rf dist","compile":"tsc","lint":"prettier -l 'src/**/*.{ts,js}' && tslint -p tsconfig.json 'src/**/*.ts'","lint-fix":"prettier --write 'src/**/*.{ts,js}' && tslint --fix -p tsconfig.json 'src/**/*.ts'","prepublish":"npm run clean && npm run compile","test":"jest --verbose","watch":"tsc -w"},"types":"./dist/index.d.ts","version":"0.0.0"};
 
 /***/ }),
 
