@@ -12,9 +12,9 @@ const typeDefs = gql`
     get(itemId: String): [Comment]
   }
   type Mutation {
-    add(itemId: String, author:String, content:String): String
-    edit(itemId: String, msgId:Int, author:String, content:String): String
-    delete(itemId: String, msgId:Int) : String
+    add(itemId: String, author:String, content:String): [Comment]
+    edit(itemId: String, msgId:Int, content:String): [Comment]
+    delete(itemId: String, msgId:Int) : [Comment]
   }
 `;
 
@@ -32,7 +32,7 @@ const resolvers = {
     },
     edit: (roots, args) => {
       const service = new CommentService();
-      return service.editComments(args.itemId, args.msgId, args.author, args.content);
+      return service.editComments(args.itemId, args.msgId, args.content);
     },
     delete: (roots, args) => {
       const service = new CommentService();

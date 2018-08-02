@@ -113,8 +113,8 @@ class CommentService {
     addComments(itemId, author, content) {
         return this.commentStore.add(itemId, author, content);
     }
-    editComments(itemId, msgId, author, content) {
-        return this.commentStore.edit(itemId, msgId, author, content);
+    editComments(itemId, msgId, content) {
+        return this.commentStore.edit(itemId, msgId, content);
     }
     deleteComments(itemId, msgId) {
         return this.commentStore.delete(itemId, msgId);
@@ -154,6 +154,7 @@ const redisOptions = {
 };
 let client;
 class CommentStorage {
+    // Get Comments
     get(key) {
         client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
         const getAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.lrange).bind(client);
@@ -167,6 +168,7 @@ class CommentStorage {
             return res.map(row => JSON.parse(row));
         });
     }
+    // Add Comments
     add(key, author, content) {
         return __awaiter(this, void 0, void 0, function* () {
             client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
@@ -188,11 +190,12 @@ class CommentStorage {
             const addAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.rpush).bind(client);
             let value = JSON.stringify(comment);
             return addAsync(key, value).then((status) => {
-                return status;
+                return this.get(key);
             });
         });
     }
-    edit(key, msgId, author, content) {
+    // Edit Comments
+    edit(key, msgId, content) {
         return __awaiter(this, void 0, void 0, function* () {
             client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
             const setAsync = Object(util__WEBPACK_IMPORTED_MODULE_1__["promisify"])(client.lset).bind(client);
@@ -200,17 +203,16 @@ class CommentStorage {
             for (let i = 0; i < comments.length; i++) {
                 if (comments[i].msgId === msgId) {
                     console.log(comments[i]);
-                    if (author)
-                        comments[i].author = author;
                     if (content)
                         comments[i].content = content;
                     console.log(comments[i]);
                     setAsync(key, i, JSON.stringify(comments[i]));
                 }
             }
-            return "OK";
+            return this.get(key);
         });
     }
+    //Delete Comments
     delete(key, msgId) {
         return __awaiter(this, void 0, void 0, function* () {
             client = redis__WEBPACK_IMPORTED_MODULE_0__["createClient"](redisOptions.port, redisOptions.host);
@@ -222,7 +224,7 @@ class CommentStorage {
                     delAsync(key, 0, JSON.stringify(comments[i]));
                 }
             }
-            return "OK";
+            return this.get(key);
         });
     }
 }
@@ -255,9 +257,9 @@ const typeDefs = apollo_server_lambda__WEBPACK_IMPORTED_MODULE_0__["gql"] `
     get(itemId: String): [Comment]
   }
   type Mutation {
-    add(itemId: String, author:String, content:String): String
-    edit(itemId: String, msgId:Int, author:String, content:String): String
-    delete(itemId: String, msgId:Int) : String
+    add(itemId: String, author:String, content:String): [Comment]
+    edit(itemId: String, msgId:Int, content:String): [Comment]
+    delete(itemId: String, msgId:Int) : [Comment]
   }
 `;
 const resolvers = {
@@ -274,7 +276,7 @@ const resolvers = {
         },
         edit: (roots, args) => {
             const service = new _comment_service__WEBPACK_IMPORTED_MODULE_1__["CommentService"]();
-            return service.editComments(args.itemId, args.msgId, args.author, args.content);
+            return service.editComments(args.itemId, args.msgId, args.content);
         },
         delete: (roots, args) => {
             const service = new _comment_service__WEBPACK_IMPORTED_MODULE_1__["CommentService"]();
@@ -9760,7 +9762,7 @@ exports.defaultSignature = defaultSignature;
 /*! exports provided: _args, _from, _id, _inBundle, _integrity, _location, _phantomChildren, _requested, _requiredBy, _resolved, _spec, _where, author, bugs, dependencies, description, devDependencies, engines, homepage, jest, license, main, name, repository, scripts, types, version, default */
 /***/ (function(module) {
 
-module.exports = {"_args":[["apollo-engine-reporting@0.0.0","C:\\Users\\ayoubed\\Desktop\\phoenix-service-comments"]],"_from":"apollo-engine-reporting@0.0.0","_id":"apollo-engine-reporting@0.0.0","_inBundle":false,"_integrity":"sha512-8v+mLqlwTwqCbaI3z7hTFVx6DhXBYMu+7xJP2TllDXwaF3qyTWrmp+YKH7AGFx5y7FRnXndd1wNuhgR3V9BCEQ==","_location":"/apollo-engine-reporting","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"apollo-engine-reporting@0.0.0","name":"apollo-engine-reporting","escapedName":"apollo-engine-reporting","rawSpec":"0.0.0","saveSpec":null,"fetchSpec":"0.0.0"},"_requiredBy":["/apollo-server-core"],"_resolved":"https://registry.npmjs.org/apollo-engine-reporting/-/apollo-engine-reporting-0.0.0.tgz","_spec":"0.0.0","_where":"C:\\Users\\ayoubed\\Desktop\\phoenix-service-comments","author":{"name":"Apollo","email":"community@apollographql.com"},"bugs":{"url":"https://github.com/apollographql/apollo-engine-reporting/issues"},"dependencies":{"apollo-engine-reporting-protobuf":"0.0.0-beta.7","apollo-server-env":"2.0.0","async-retry":"^1.2.1","graphql-extensions":"0.1.0","lodash":"^4.17.10"},"description":"Send reports about your GraphQL services to Apollo Engine","devDependencies":{"@types/async-retry":"1.2.1","@types/graphql":"0.13.3","@types/jest":"23.3.0","@types/lodash":"4.14.112","graphql":"0.13.2","graphql-tag":"2.9.2","graphql-tools":"3.0.5","jest":"23.4.1","ts-jest":"22.4.6","tslint":"5.11.0"},"engines":{"node":">=6.0"},"homepage":"https://github.com/apollographql/apollo-engine-reporting#readme","jest":{"testEnvironment":"node","setupFiles":["<rootDir>/node_modules/apollo-server-env/dist/index.js"],"transform":{"^.+\\.(ts|js)$":"ts-jest"},"moduleFileExtensions":["ts","js","json"],"testRegex":"src/__tests__/.*$","globals":{"ts-jest":{"skipBabel":true}}},"license":"MIT","main":"./dist/index.js","name":"apollo-engine-reporting","repository":{"type":"git","url":"git+https://github.com/apollographql/apollo-engine-reporting.git"},"scripts":{"circle":"jest --verbose --coverage","clean":"rm -rf dist","compile":"tsc","lint":"prettier -l 'src/**/*.{ts,js}' && tslint -p tsconfig.json 'src/**/*.ts'","lint-fix":"prettier --write 'src/**/*.{ts,js}' && tslint --fix -p tsconfig.json 'src/**/*.ts'","prepublish":"npm run clean && npm run compile","test":"jest --verbose","watch":"tsc -w"},"types":"./dist/index.d.ts","version":"0.0.0"};
+module.exports = {"_args":[["apollo-engine-reporting@0.0.0","C:\\Users\\Dev WTC\\Desktop\\Backend\\phoenix-service-comments"]],"_from":"apollo-engine-reporting@0.0.0","_id":"apollo-engine-reporting@0.0.0","_inBundle":false,"_integrity":"sha512-8v+mLqlwTwqCbaI3z7hTFVx6DhXBYMu+7xJP2TllDXwaF3qyTWrmp+YKH7AGFx5y7FRnXndd1wNuhgR3V9BCEQ==","_location":"/apollo-engine-reporting","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"apollo-engine-reporting@0.0.0","name":"apollo-engine-reporting","escapedName":"apollo-engine-reporting","rawSpec":"0.0.0","saveSpec":null,"fetchSpec":"0.0.0"},"_requiredBy":["/apollo-server-core"],"_resolved":"https://registry.npmjs.org/apollo-engine-reporting/-/apollo-engine-reporting-0.0.0.tgz","_spec":"0.0.0","_where":"C:\\Users\\Dev WTC\\Desktop\\Backend\\phoenix-service-comments","author":{"name":"Apollo","email":"community@apollographql.com"},"bugs":{"url":"https://github.com/apollographql/apollo-engine-reporting/issues"},"dependencies":{"apollo-engine-reporting-protobuf":"0.0.0-beta.7","apollo-server-env":"2.0.0","async-retry":"^1.2.1","graphql-extensions":"0.1.0","lodash":"^4.17.10"},"description":"Send reports about your GraphQL services to Apollo Engine","devDependencies":{"@types/async-retry":"1.2.1","@types/graphql":"0.13.3","@types/jest":"23.3.0","@types/lodash":"4.14.112","graphql":"0.13.2","graphql-tag":"2.9.2","graphql-tools":"3.0.5","jest":"23.4.1","ts-jest":"22.4.6","tslint":"5.11.0"},"engines":{"node":">=6.0"},"homepage":"https://github.com/apollographql/apollo-engine-reporting#readme","jest":{"testEnvironment":"node","setupFiles":["<rootDir>/node_modules/apollo-server-env/dist/index.js"],"transform":{"^.+\\.(ts|js)$":"ts-jest"},"moduleFileExtensions":["ts","js","json"],"testRegex":"src/__tests__/.*$","globals":{"ts-jest":{"skipBabel":true}}},"license":"MIT","main":"./dist/index.js","name":"apollo-engine-reporting","repository":{"type":"git","url":"git+https://github.com/apollographql/apollo-engine-reporting.git"},"scripts":{"circle":"jest --verbose --coverage","clean":"rm -rf dist","compile":"tsc","lint":"prettier -l 'src/**/*.{ts,js}' && tslint -p tsconfig.json 'src/**/*.ts'","lint-fix":"prettier --write 'src/**/*.{ts,js}' && tslint --fix -p tsconfig.json 'src/**/*.ts'","prepublish":"npm run clean && npm run compile","test":"jest --verbose","watch":"tsc -w"},"types":"./dist/index.d.ts","version":"0.0.0"};
 
 /***/ }),
 

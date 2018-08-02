@@ -13,13 +13,13 @@ let client;
 export interface ICommentStorage {
 
   get(key): [Comment];
-  add(key: string, author: string, content: string): string;
-  edit(key: string, msgId: number, author: string, content: string): string;
-  delete(key: string, msgId: number): string;
+  add(key: string, author: string, content: string): [Comment];
+  edit(key: string, msgId: number, content: string): [Comment];
+  delete(key: string, msgId: number): [Comment];
 }
 
 export class CommentStorage {
-
+  // Get Comments
   get(key): [Comment] {
 
     client = redis.createClient(redisOptions.port, redisOptions.host);
@@ -35,8 +35,8 @@ export class CommentStorage {
       return res.map(row => JSON.parse(row));
     });
   }
-
-  async add(key, author, content): Promise<string> {
+  // Add Comments
+  async add(key, author, content): Promise<[Comment]> {
 
     client = redis.createClient(redisOptions.port, redisOptions.host);
     const lindexAsync = promisify(client.lindex).bind(client);
@@ -59,11 +59,11 @@ export class CommentStorage {
     let value = JSON.stringify(comment);
 
     return addAsync(key, value).then((status) => {
-      return status;
+      return this.get(key);
     });
   }
-
-  async edit(key, msgId, author, content): Promise<string> {
+  // Edit Comments
+  async edit(key, msgId, content): Promise<[Comment]> {
 
     client = redis.createClient(redisOptions.port, redisOptions.host);
     const setAsync = promisify(client.lset).bind(client);
@@ -72,17 +72,16 @@ export class CommentStorage {
     for (let i = 0; i < comments.length; i++) {
       if (comments[i].msgId === msgId) {
         console.log(comments[i]);
-        if(author) comments[i].author = author;
         if(content) comments[i].content = content;
         console.log(comments[i]);
         setAsync(key, i, JSON.stringify(comments[i]));
       }
     }
 
-    return "OK";
+    return this.get(key);
   }
-
-  async delete(key, msgId): Promise<string> {
+  //Delete Comments
+  async delete(key, msgId): Promise<[Comment]> {
 
     client = redis.createClient(redisOptions.port, redisOptions.host);
     const delAsync = promisify(client.lrem).bind(client);
@@ -95,6 +94,6 @@ export class CommentStorage {
       }
     }
 
-    return "OK";
+    return this.get(key);
   }
 }

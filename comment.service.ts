@@ -4,9 +4,9 @@ import { ICommentStorage, CommentStorage } from './comment.storage';
 export interface ICommentService {
 
   getComments(itemId: string): [Comment];
-  addComments(itemId: string, author: string, content: string): string;
-  editComments(itemId: string, msgId:number, author:string, content:string) : string;
-  deleteComments(itemId: string, msgId:number) : string;
+  addComments(itemId: string, author: string, content: string): [Comment];
+  editComments(itemId: string, msgId:number, content:string) : [Comment];
+  deleteComments(itemId: string, msgId:number) : [Comment];
 }
 
 
@@ -27,17 +27,17 @@ export class CommentService implements ICommentService {
     return this.commentStore.get(itemId);
   }
 
-  addComments(itemId, author, content): string {
+  addComments(itemId, author, content): [Comment] {
 
     return this.commentStore.add(itemId, author, content);
   }
   
-  editComments(itemId, msgId, author, content): string {
+  editComments(itemId, msgId, content): [Comment] {
 
-    return this.commentStore.edit(itemId, msgId, author, content);
+    return this.commentStore.edit(itemId, msgId, content);
   }
 
-  deleteComments(itemId, msgId) : string{
+  deleteComments(itemId, msgId) : [Comment]{
 
     return this.commentStore.delete(itemId, msgId);
   }
