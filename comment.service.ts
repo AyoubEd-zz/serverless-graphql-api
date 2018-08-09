@@ -7,6 +7,7 @@ export interface ICommentService {
   addComments(itemId: string, userId: string, content: string): Promise<[Comment]>;
   editComments(itemId: string, msgId:number, content:string) : Promise<[Comment]>;
   deleteComments(itemId: string, msgId:number) : Promise<[Comment]>;
+
 }
 
 
@@ -23,6 +24,7 @@ export class CommentService implements ICommentService {
   }
 
   getComments(itemId): Promise<[Comment]> {
+
 
     return this.commentStore.get(itemId);
   }

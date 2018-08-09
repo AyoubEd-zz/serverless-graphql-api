@@ -15,6 +15,7 @@ export interface ICommentStorage {
   add(key: string, userId: string, content: string): Promise<[Comment]>;
   edit(key: string, msgId: number, content: string): Promise<[Comment]>;
   delete(key: string, msgId: number): Promise<[Comment]>;
+
 }
 
 export class CommentStorage {
@@ -22,6 +23,7 @@ export class CommentStorage {
   // CRUD functions
   // Get Comments : Uses the key wich is itemId to fetch all comments related to it
   get(key): Promise<[Comment]> {
+
 
     client = redis.createClient(redisOptions.port, redisOptions.host);
     const getAsync = promisify(client.lrange).bind(client);
