@@ -91,8 +91,6 @@
   !*** ./comment.service.ts ***!
   \****************************/
 /*! exports provided: CommentService */
-<<<<<<< HEAD
-=======
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -131,52 +129,10 @@ class CommentService {
   !*** ./comment.storage.ts ***!
   \****************************/
 /*! exports provided: CommentStorage */
->>>>>>> b4217eeddc93d29da6391a183d0fbe0b8e562ce7
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-<<<<<<< HEAD
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CommentService", function() { return CommentService; });
-/* harmony import */ var _comment_storage__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./comment.storage */ "./comment.storage.ts");
-
-class CommentService {
-    constructor(store) {
-        if (store) {
-            this.commentStore = store;
-        }
-        else {
-            this.commentStore = new _comment_storage__WEBPACK_IMPORTED_MODULE_0__["CommentStorage"]();
-        }
-    }
-    getComments(itemId) {
-        return this.commentStore.get(itemId);
-    }
-    addComments(itemId, userId, content) {
-        return this.commentStore.add(itemId, userId, content);
-    }
-    editComments(itemId, msgId, content) {
-        return this.commentStore.edit(itemId, msgId, content);
-    }
-    deleteComments(itemId, msgId) {
-        return this.commentStore.delete(itemId, msgId);
-    }
-}
-
-
-/***/ }),
-
-/***/ "./comment.storage.ts":
-/*!****************************!*\
-  !*** ./comment.storage.ts ***!
-  \****************************/
-/*! exports provided: CommentStorage */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-=======
->>>>>>> b4217eeddc93d29da6391a183d0fbe0b8e562ce7
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CommentStorage", function() { return CommentStorage; });
 /* harmony import */ var redis__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! redis */ "./node_modules/redis/index.js");
 /* harmony import */ var redis__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(redis__WEBPACK_IMPORTED_MODULE_0__);
