@@ -5,15 +5,11 @@
       "name": "aws-nodejs-typescript"
     },
     "provider": {
-      "stage": "staging",
-      "region": "eu-west-1",
+      "stage": "dev",
+      "region": "us-east-1",
       "variableSyntax": "\\${([ ~:a-zA-Z0-9._'\",\\-\\/\\(\\)]+?)}",
       "name": "aws",
       "runtime": "nodejs8.10",
-      "environment": {
-        "redisHost": "34.244.42.2",
-        "redisPort": "6379"
-      },
       "versionFunctions": true,
       "remoteFunctionData": null,
       "compiledCloudFormationTemplate": {
@@ -26,7 +22,7 @@
           "GraphqlLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/aws-nodejs-typescript-staging-graphql"
+              "LogGroupName": "/aws/lambda/aws-nodejs-typescript-dev-graphql"
             }
           },
           "IamRoleLambdaExecution": {
@@ -54,7 +50,7 @@
                     "Fn::Join": [
                       "-",
                       [
-                        "staging",
+                        "dev",
                         "aws-nodejs-typescript",
                         "lambda"
                       ]
@@ -70,7 +66,7 @@
                         ],
                         "Resource": [
                           {
-                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/aws-nodejs-typescript-staging-graphql:*"
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/aws-nodejs-typescript-dev-graphql:*"
                           }
                         ]
                       },
@@ -81,7 +77,7 @@
                         ],
                         "Resource": [
                           {
-                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/aws-nodejs-typescript-staging-graphql:*:*"
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/aws-nodejs-typescript-dev-graphql:*:*"
                           }
                         ]
                       }
@@ -95,8 +91,8 @@
                   "-",
                   [
                     "aws-nodejs-typescript",
-                    "staging",
-                    "eu-west-1",
+                    "dev",
+                    "us-east-1",
                     "lambdaRole"
                   ]
                 ]
@@ -110,9 +106,9 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/aws-nodejs-typescript/staging/1533829171674-2018-08-09T15:39:31.674Z/aws-nodejs-typescript.zip"
+                "S3Key": "serverless/aws-nodejs-typescript/dev/1533834884724-2018-08-09T17:14:44.724Z/aws-nodejs-typescript.zip"
               },
-              "FunctionName": "aws-nodejs-typescript-staging-graphql",
+              "FunctionName": "aws-nodejs-typescript-dev-graphql",
               "Handler": "handler.graphqlHandler",
               "MemorySize": 1024,
               "Role": {
@@ -122,33 +118,27 @@
                 ]
               },
               "Runtime": "nodejs8.10",
-              "Timeout": 6,
-              "Environment": {
-                "Variables": {
-                  "redisHost": "34.244.42.2",
-                  "redisPort": "6379"
-                }
-              }
+              "Timeout": 6
             },
             "DependsOn": [
               "GraphqlLogGroup",
               "IamRoleLambdaExecution"
             ]
           },
-          "GraphqlLambdaVersiontQCHK4fsHD5sMyi8cZt80i5ymWGAepLLmiqGhGp1Ao": {
+          "GraphqlLambdaVersionaT33yjh7qaolMgZtyUBgOSEKDIIxoIEaZ0nusAdY": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "GraphqlLambdaFunction"
               },
-              "CodeSha256": "qAmW//kjb4RVx0AKHkxq02qCemxSuwwGrUNPOAsGbqk="
+              "CodeSha256": "7zsJVum9vIY5W/YRkA4i6kFfoe6j9VF8kpY9OurpiEg="
             }
           },
           "ApiGatewayRestApi": {
             "Type": "AWS::ApiGateway::RestApi",
             "Properties": {
-              "Name": "staging-aws-nodejs-typescript",
+              "Name": "dev-aws-nodejs-typescript",
               "EndpointConfiguration": {
                 "Types": [
                   "EDGE"
@@ -214,13 +204,13 @@
               "MethodResponses": []
             }
           },
-          "ApiGatewayDeployment1533829171700": {
+          "ApiGatewayDeployment1533834884767": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
               },
-              "StageName": "staging"
+              "StageName": "dev"
             },
             "DependsOn": [
               "ApiGatewayMethodGraphqlPost"
@@ -283,7 +273,7 @@
           "GraphqlLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "GraphqlLambdaVersiontQCHK4fsHD5sMyi8cZt80i5ymWGAepLLmiqGhGp1Ao"
+              "Ref": "GraphqlLambdaVersionaT33yjh7qaolMgZtyUBgOSEKDIIxoIEaZ0nusAdY"
             }
           },
           "ServiceEndpoint": {
@@ -296,11 +286,11 @@
                   {
                     "Ref": "ApiGatewayRestApi"
                   },
-                  ".execute-api.eu-west-1.",
+                  ".execute-api.us-east-1.",
                   {
                     "Ref": "AWS::URLSuffix"
                   },
-                  "/staging"
+                  "/dev"
                 ]
               ]
             }
@@ -342,7 +332,7 @@
             }
           }
         ],
-        "name": "aws-nodejs-typescript-staging-graphql",
+        "name": "aws-nodejs-typescript-dev-graphql",
         "package": {
           "artifact": ".serverless\\aws-nodejs-typescript.zip"
         },
@@ -354,7 +344,7 @@
     }
   },
   "package": {
-    "artifactDirectoryName": "serverless/aws-nodejs-typescript/staging/1533829171674-2018-08-09T15:39:31.674Z",
+    "artifactDirectoryName": "serverless/aws-nodejs-typescript/dev/1533834884724-2018-08-09T17:14:44.724Z",
     "artifact": ""
   }
 }
