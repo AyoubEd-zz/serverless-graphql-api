@@ -24,6 +24,11 @@ module.exports = {
     rules: [
       // all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
       { test: /\.tsx?$/, loader: 'ts-loader' },
+      {
+        type: 'javascript/auto',
+        test: /\.mjs$/,
+        use: []
+      }
     ],
   },
 };
