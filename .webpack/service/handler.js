@@ -162,8 +162,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 const redisOptions = {
-    host: 'localhost',
-    port: '6379',
+    host: process.env.redisHost,
+    port: process.env.redisPort,
 };
 let client;
 class CommentStorage {

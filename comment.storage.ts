@@ -3,8 +3,8 @@ import { promisify } from 'util';
 import { Comment } from './types'
 
 const redisOptions = {
-  host: 'localhost',
-  port: '6379',
+  host: process.env.redisHost,
+  port: process.env.redisPort,
 }
 let client;
 
