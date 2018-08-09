@@ -86,6 +86,19 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./aliases/hiredis.js":
+/*!****************************!*\
+  !*** ./aliases/hiredis.js ***!
+  \****************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = (null);
+
+/***/ }),
+
 /***/ "./comment.service.ts":
 /*!****************************!*\
   !*** ./comment.service.ts ***!
@@ -71587,7 +71600,7 @@ module.exports.ParserError = __webpack_require__(/*! ./lib/redisError */ "./node
 "use strict";
 
 
-var hiredis = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module 'hiredis'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()))
+var hiredis = __webpack_require__(/*! hiredis */ "./aliases/hiredis.js")
 var ReplyError = __webpack_require__(/*! ../lib/replyError */ "./node_modules/redis-parser/lib/replyError.js")
 var ParserError = __webpack_require__(/*! ../lib/parserError */ "./node_modules/redis-parser/lib/parserError.js")
 

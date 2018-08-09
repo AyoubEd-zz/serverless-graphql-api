@@ -13,6 +13,9 @@ module.exports = {
   devtool: 'source-map',
   resolve: {
     extensions: ['.mjs','.js', '.jsx', '.json', '.ts', '.tsx'],
+    alias: {
+      'hiredis': path.join(__dirname, 'aliases/hiredis.js')
+    }
   },
   output: {
     libraryTarget: 'commonjs',
