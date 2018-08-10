@@ -92,7 +92,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/aws-nodejs-typescript/dev/1533834884724-2018-08-09T17:14:44.724Z/aws-nodejs-typescript.zip"
+          "S3Key": "serverless/aws-nodejs-typescript/dev/1533898585599-2018-08-10T10:56:25.599Z/aws-nodejs-typescript.zip"
         },
         "FunctionName": "aws-nodejs-typescript-dev-graphql",
         "Handler": "handler.graphqlHandler",
@@ -104,21 +104,27 @@
           ]
         },
         "Runtime": "nodejs8.10",
-        "Timeout": 6
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "redisHost": "34.244.42.2",
+            "redisPort": "6379"
+          }
+        }
       },
       "DependsOn": [
         "GraphqlLogGroup",
         "IamRoleLambdaExecution"
       ]
     },
-    "GraphqlLambdaVersionaT33yjh7qaolMgZtyUBgOSEKDIIxoIEaZ0nusAdY": {
+    "GraphqlLambdaVersion3nfW3PcA9jaFa3oq5DVPS8Py4COs89lrykInLF2K4": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "GraphqlLambdaFunction"
         },
-        "CodeSha256": "7zsJVum9vIY5W/YRkA4i6kFfoe6j9VF8kpY9OurpiEg="
+        "CodeSha256": "KFuMnrKVHQNyeb4X92De3Y9NMGdTV2oZDSoI1WdKNl4="
       }
     },
     "ApiGatewayRestApi": {
@@ -190,7 +196,7 @@
         "MethodResponses": []
       }
     },
-    "ApiGatewayDeployment1533834884767": {
+    "ApiGatewayDeployment1533898585627": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -259,7 +265,7 @@
     "GraphqlLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "GraphqlLambdaVersionaT33yjh7qaolMgZtyUBgOSEKDIIxoIEaZ0nusAdY"
+        "Ref": "GraphqlLambdaVersion3nfW3PcA9jaFa3oq5DVPS8Py4COs89lrykInLF2K4"
       }
     },
     "ServiceEndpoint": {
