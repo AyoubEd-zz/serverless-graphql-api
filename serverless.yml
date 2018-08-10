@@ -10,8 +10,8 @@ provider:
   runtime: nodejs8.10
   stage: ${opt:stage, 'dev'}
   environment:
-    redisHost: ${file(../config/${self:provider.stage}.json), 'localhost'}
-    redisPort: ${file(../config/${self:provider.stage}.json), '6379'}
+    redisHost: '${file(./config/${self:provider.stage}.json):redis.host}'
+    redisPort: '${file(./config/${self:provider.stage}.json):redis.port}'
 
 functions:
   graphql:
@@ -20,3 +20,4 @@ functions:
       - http:
           method: post
           path: graphql
+
