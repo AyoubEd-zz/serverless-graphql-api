@@ -5,8 +5,8 @@ export interface ICommentService {
 
   getComments(itemId: string): Promise<[Comment]>;
   addComments(itemId: string, userId: string, content: string): Promise<[Comment]>;
-  editComments(itemId: string, msgId:number, content:string) : Promise<[Comment]>;
-  deleteComments(itemId: string, msgId:number) : Promise<[Comment]>;
+  editComments(itemId: string, msgId: number, userId: string, content: string): Promise<[Comment]>;
+  deleteComments(itemId: string, msgId: number, userId: string): Promise<[Comment]>;
 
 }
 
@@ -33,14 +33,14 @@ export class CommentService implements ICommentService {
 
     return this.commentStore.add(itemId, userId, content);
   }
-  
-  editComments(itemId, msgId, content): Promise<[Comment]> {
 
-    return this.commentStore.edit(itemId, msgId, content);
+  editComments(itemId, msgId, userId, content): Promise<[Comment]> {
+
+    return this.commentStore.edit(itemId, msgId, userId, content);
   }
 
-  deleteComments(itemId, msgId) : Promise<[Comment]>{
+  deleteComments(itemId, msgId, userId): Promise<[Comment]> {
 
-    return this.commentStore.delete(itemId, msgId);
+    return this.commentStore.delete(itemId, msgId, userId);
   }
 }

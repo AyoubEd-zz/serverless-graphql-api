@@ -7,14 +7,15 @@ const typeDefs = gql`
     userId : String
     content : String
     createdAt : String
+    deleted : Boolean
   }
   type Query {
     get(itemId: String): [Comment]
   }
   type Mutation {
     add(itemId: String, userId:String, content:String): [Comment]
-    edit(itemId: String, msgId:Int, content:String): [Comment]
-    delete(itemId: String, msgId:Int) : [Comment]
+    edit(itemId: String, msgId:Int,userId:String, content:String): [Comment]
+    delete(itemId: String, msgId:Int, userId:String) : [Comment]
   }
 `;
 
@@ -35,12 +36,12 @@ const resolvers = {
     //Edit Comment
     edit: (roots, args) => {
       const service = new CommentService();
-      return service.editComments(args.itemId, args.msgId, args.content);
+      return service.editComments(args.itemId, args.msgId, args.userId, args.content);
     },
     // Delete Comment
     delete: (roots, args) => {
       const service = new CommentService();
-      return service.deleteComments(args.itemId, args.msgId);
+      return service.deleteComments(args.itemId, args.msgId, args.userId);
     }
   }
 };

@@ -110,7 +110,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/aws-nodejs-typescript/dev/1533898585599-2018-08-10T10:56:25.599Z/aws-nodejs-typescript.zip"
+                "S3Key": "serverless/aws-nodejs-typescript/dev/1535641624187-2018-08-30T15:07:04.187Z/aws-nodejs-typescript.zip"
               },
               "FunctionName": "aws-nodejs-typescript-dev-graphql",
               "Handler": "handler.graphqlHandler",
@@ -135,14 +135,14 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "GraphqlLambdaVersion3nfW3PcA9jaFa3oq5DVPS8Py4COs89lrykInLF2K4": {
+          "GraphqlLambdaVersion4PhkF2UX4BxuRVxqt7HOnhvz46bE755fFeV3dHD2Zc": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "GraphqlLambdaFunction"
               },
-              "CodeSha256": "KFuMnrKVHQNyeb4X92De3Y9NMGdTV2oZDSoI1WdKNl4="
+              "CodeSha256": "e5BdKsDWx0NgsCX7zCV/ysTtfPhUZOSo66aq2OGaEVU="
             }
           },
           "ApiGatewayRestApi": {
@@ -214,7 +214,7 @@
               "MethodResponses": []
             }
           },
-          "ApiGatewayDeployment1533898585627": {
+          "ApiGatewayDeployment1535641624217": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -283,7 +283,7 @@
           "GraphqlLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "GraphqlLambdaVersion3nfW3PcA9jaFa3oq5DVPS8Py4COs89lrykInLF2K4"
+              "Ref": "GraphqlLambdaVersion4PhkF2UX4BxuRVxqt7HOnhvz46bE755fFeV3dHD2Zc"
             }
           },
           "ServiceEndpoint": {
@@ -354,7 +354,7 @@
     }
   },
   "package": {
-    "artifactDirectoryName": "serverless/aws-nodejs-typescript/dev/1533898585599-2018-08-10T10:56:25.599Z",
+    "artifactDirectoryName": "serverless/aws-nodejs-typescript/dev/1535641624187-2018-08-30T15:07:04.187Z",
     "artifact": ""
   }
 }

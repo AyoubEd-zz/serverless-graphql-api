@@ -13,15 +13,15 @@ export interface ICommentStorage {
 
   get(key): Promise<[Comment]>;
   add(key: string, userId: string, content: string): Promise<[Comment]>;
-  edit(key: string, msgId: number, content: string): Promise<[Comment]>;
-  delete(key: string, msgId: number): Promise<[Comment]>;
+  edit(key: string, msgId: number, userId: string, content: string): Promise<[Comment]>;
+  delete(key: string, msgId: number, userId: string): Promise<[Comment]>;
 
 }
 
 export class CommentStorage {
-  
+
   // CRUD functions
-  // Get Comments : Uses the key wich is itemId to fetch all comments related to it
+  // Get Comments : fetch all comments related to it the module(rfq,quote)
   get(key): Promise<[Comment]> {
 
 
@@ -35,7 +35,18 @@ export class CommentStorage {
       console.log('redis closed.');
     });
     return getAsync(key, 0, -1).then((res) => {
-      return res.map(row => JSON.parse(row));
+      return res
+        .map(row => JSON.parse(row))
+        .filter(row => (row.deleted == false));
+    });
+  }
+  getNotFiletered(key): Promise<[Comment]> {
+    client = redis.createClient(redisOptions.port, redisOptions.host);
+    const getAsync = promisify(client.lrange).bind(client);
+
+    return getAsync(key, 0, -1).then((res) => {
+      return res
+        .map(row => JSON.parse(row));
     });
   }
   // Add Comments : appends a comment to the list for a specific item
@@ -48,14 +59,14 @@ export class CommentStorage {
     if (lastElement != null) {
       lastElement = JSON.parse(lastElement);
       new_msgId = lastElement.msgId + 1;
-      console.log(lastElement.msgId);
     }
 
     let comment: Comment = {
       msgId: new_msgId,
       userId: userId,
       content: content,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      deleted: false
     }
     client = redis.createClient(redisOptions.port, redisOptions.host);
     const addAsync = promisify(client.rpush).bind(client);
@@ -66,34 +77,36 @@ export class CommentStorage {
     });
   }
   // Edit Comments  : loop through comments and edit the one with the specific msgId
-  async edit(key, msgId, content): Promise<[Comment]> {
+  async edit(key, msgId, userId, content): Promise<[Comment]> {
 
     client = redis.createClient(redisOptions.port, redisOptions.host);
     const setAsync = promisify(client.lset).bind(client);
-    let comments = await this.get(key);
+    let comments = await this.getNotFiletered(key);
 
     for (let i = 0; i < comments.length; i++) {
-      if (comments[i].msgId === msgId) {
-        console.log(comments[i]);
-        if(content) comments[i].content = content;
-        console.log(comments[i]);
+      if (comments[i].msgId == msgId && comments[i].userId == userId) {
+        if (content) comments[i].content = content;
         setAsync(key, i, JSON.stringify(comments[i]));
+        
       }
     }
 
     return this.get(key);
   }
   //Delete Comments : loop through the comments and delete the comment with specific msgId
-  async delete(key, msgId): Promise<[Comment]> {
+  async delete(key, msgId, userId): Promise<[Comment]> {
 
     client = redis.createClient(redisOptions.port, redisOptions.host);
-    const delAsync = promisify(client.lrem).bind(client);
-    let comments = await this.get(key);
+    const setAsync = promisify(client.lset).bind(client);
+    let comments = await this.getNotFiletered(key);
 
     for (let i = 0; i < comments.length; i++) {
-      if (comments[i].msgId === msgId) {
-        console.log(comments[i]);
-        delAsync(key, 0, JSON.stringify(comments[i]));
+      if (comments[i].msgId === msgId && userId == comments[i].userId
+        && comments[i].deleted == false) {
+
+        comments[i].deleted = true;
+        setAsync(key, i, JSON.stringify(comments[i]));
+
       }
     }
 
