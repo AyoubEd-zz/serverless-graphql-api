@@ -1,6 +1,6 @@
 {
     "redis":{
-        "host" : "localhost",
+        "host" : "ec2_public_ip",
         "port" : "6379"
     }
 }

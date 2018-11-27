@@ -1,6 +1,6 @@
 {
     "redis":{
-        "host" : "34.244.42.2",
+        "host" : "localhost_if_local_redis_instance",
         "port" : "6379"
     }
 }
