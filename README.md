@@ -1,5 +1,7 @@
 # Serverless Backend with Graphql and Redis DB
 
+Set it up yourself: https://medium.com/@ayoub.edakhly/a-dummy-guide-to-building-your-first-api-using-serverless-typescript-and-graphql-5802d13874a0
+
 ## Serverless :
 
 -Install Dependencies using : 
