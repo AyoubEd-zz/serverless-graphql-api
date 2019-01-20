@@ -4,27 +4,27 @@ Set it up yourself: https://medium.com/@ayoub.edakhly/a-dummy-guide-to-building-
 
 ## Serverless :
 
--Install Dependencies using : 
+Install Dependencies using : 
 ```
 npm i
 ```
--set aws credentials : 
+Set aws credentials : 
 ```
 serverless config credentials --provider aws --key KEY --secret SECRET_KEY
 ```
--Run for Dev Env : 
+Run for Dev Env : 
 ```
 npm start
 ```
--Deploy  : 
+Deploy  : 
 ```
 sls deploy -v
 ```
 
 ## Redis : 
 
--Access the EC2 instance using ssh
--run redis : 
+Access the EC2 instance using ssh
+run redis : 
 ```
 docker run  --volume /docker/redis-data:/data -p 6379:6379 -d redis   redis-server --appendonly yes
 ```
